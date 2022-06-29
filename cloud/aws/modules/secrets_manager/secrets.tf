@@ -1,6 +1,9 @@
 # Importing the AWS secrets created previously using name.
 data "aws_secretsmanager_secret" "postgres_username" {
-  name = "${var.app_prefix}-postgres_username"
+  name = aws_secretsmanager_secret.postgres_username_secret.name
+  depends_on = [
+    aws_secretsmanager_secret.postgres_username_secret
+  ]
 }
 
 # Importing the AWS secret version created previously using arn.
@@ -10,7 +13,10 @@ data "aws_secretsmanager_secret_version" "postgres_username_version" {
 
 # Importing the AWS secrets created previously using name.
 data "aws_secretsmanager_secret" "postgres_password" {
-  name = "${var.app_prefix}-postgres_password"
+  name = aws_secretsmanager_secret.postgres_password_secret.name
+  depends_on = [
+    aws_secretsmanager_secret.postgres_password_secret
+  ]
 }
 
 # Importing the AWS secret version created previously using arn.
@@ -20,7 +26,10 @@ data "aws_secretsmanager_secret_version" "postgres_password_version" {
 
 # Importing the AWS secrets created previously using name.
 data "aws_secretsmanager_secret" "app_secret_key" {
-  name = "${var.app_prefix}-app_secret_key"
+  name = aws_secretsmanager_secret.app_secret_key_secret.name
+  depends_on = [
+    aws_secretsmanager_secret.app_secret_key_secret
+  ]
 }
 
 # Importing the AWS secret version created previously using arn.
@@ -30,7 +39,10 @@ data "aws_secretsmanager_secret_version" "app_secret_key_version" {
 
 # Importing the AWS secrets created previously using name.
 data "aws_secretsmanager_secret" "adfs_secret" {
-  name = "${var.app_prefix}-adfs_secret"
+  name = aws_secretsmanager_secret.adfs_secret_secret.name
+  depends_on = [
+    aws_secretsmanager_secret.adfs_secret_secret
+  ]
 }
 
 # Importing the AWS secret version created previously using arn.
