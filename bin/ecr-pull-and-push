@@ -1,0 +1,19 @@
+#! /bin/bash
+
+# DOC: Pull a tagged image from docker hub and upload it to ECR (default latest)
+
+set -e
+set +x
+
+source bin/lib.sh
+
+CIVIFORM_ECR_ID="e4t4a0t0"
+TAG="${1:~latest}"
+docker pull "docker.io/civiform/civiform:${TAG}"
+
+# log into AWS ECR for civiform/civiform
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin "public.ecr.aws/${CIVIFORM_ECR_ID}"
+
+# push the Docker Hub image to AWS ECR
+docker tag "civiform/civiform:${TAG}" "public.ecr.aws/${CIVIFORM_ECR_ID}/civiform/civiform:${TAG}"
+docker push "public.ecr.aws/${CIVIFORM_ECR_ID}/civiform/civiform:${TAG}"
