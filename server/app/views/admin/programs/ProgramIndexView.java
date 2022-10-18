@@ -283,7 +283,7 @@ public final class ProgramIndexView extends BaseHtmlView {
   private ButtonTag renderNewProgramButton() {
     String link = controllers.admin.routes.AdminProgramController.newOne().url();
     ButtonTag button =
-        makeSvgTextButton("Create new program", Icons.ADD)
+        makeSvgTextButton("Create program", Icons.ADD)
             .withId("new-program-button")
             .withClasses(AdminStyles.SECONDARY_BUTTON_STYLES, "my-2");
     return asRedirectElement(button, link);

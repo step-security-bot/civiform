@@ -266,7 +266,7 @@ public class AdminProgramControllerTest extends ResetPostgres {
     Result redirectResult = controller.index(addCSRFToken(Helpers.fakeRequest()).build());
     assertThat(contentAsString(redirectResult))
         .contains(
-            "Create new program", "New external program name", "New external program description");
+            "Create program", "New external program name", "New external program description");
     assertThat(contentAsString(redirectResult)).doesNotContain("Existing one", "old description");
   }
 }

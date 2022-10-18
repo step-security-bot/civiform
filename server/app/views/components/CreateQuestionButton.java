@@ -16,12 +16,12 @@ import views.style.StyleUtils;
  * Contains a helper method to render the create question button with it's corresponding dropdown.
  */
 public final class CreateQuestionButton {
-  /** Renders the "Create new question" button with a dropdown for each question type. */
+  /** Renders the "Create question" button with a dropdown for each question type. */
   public static DivTag renderCreateQuestionButton(String questionCreateRedirectUrl) {
     String parentId = "create-question-button";
     String dropdownId = parentId + "-dropdown";
     ButtonTag createNewQuestionButton =
-        button("Create new question")
+        button("Create question")
             .withId(parentId)
             .withType("button")
             .withClass(AdminStyles.PRIMARY_BUTTON_STYLES);

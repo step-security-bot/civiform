@@ -183,6 +183,6 @@ public class SecurityBrowserTest extends BaseBrowserTest {
 
     goTo(controllers.admin.routes.AdminProgramController.index());
     assertThat(browser.pageSource()).contains("Programs");
-    assertThat(browser.pageSource()).contains("Create new program");
+    assertThat(browser.pageSource()).contains("Create program");
   }
 }
