@@ -29,4 +29,11 @@ public class PersistedDurableJobRepositoryTest extends ResetPostgres {
     repo.deleteJobsOlderThanSixMonths();
     assertThat(repo.listJobs().size()).isEqualTo(1);
   }
+
+  @Test
+  public void getJobForExecution() {
+    Instant oneSecondAgo = Instant.now().minus(1, ChronoUnit.SECONDS);
+
+
+  }
 }

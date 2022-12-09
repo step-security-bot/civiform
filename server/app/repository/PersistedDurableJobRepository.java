@@ -6,6 +6,8 @@ import io.ebean.Database;
 import javax.inject.Inject;
 import models.PersistedDurableJob;
 
+import java.util.Optional;
+
 /** Implements queries related to {@link PersistedDurableJob}. */
 public final class PersistedDurableJobRepository {
 
@@ -14,6 +16,11 @@ public final class PersistedDurableJobRepository {
   @Inject
   public PersistedDurableJobRepository() {
     this.database = DB.getDefault();
+  }
+
+  public Optional<PersistedDurableJob> getJobForExecution() {
+    return database.find(PersistedDurableJob.class)
+      .findOneOrEmpty();
   }
 
   public ImmutableList<PersistedDurableJob> listJobs() {
