@@ -20,6 +20,8 @@ import org.pac4j.core.util.HttpActionHelper;
 import org.pac4j.core.util.generator.ValueGenerator;
 import org.pac4j.oidc.config.OidcConfiguration;
 import org.pac4j.oidc.logout.OidcLogoutActionBuilder;
+import org.pac4j.play.PlayWebContext;
+import play.mvc.Http;
 
 /**
  * Custom OidcLogoutActionBuilder for CiviFormProfileData (since it extends CommonProfile, not
@@ -112,6 +114,9 @@ public final class CiviformOidcLogoutActionBuilder extends OidcLogoutActionBuild
   public Optional<RedirectionAction> getLogoutAction(
       WebContext context, SessionStore sessionStore, UserProfile currentProfile, String targetUrl) {
     String logoutUrl = configuration.findLogoutUrl();
+    System.err.println("Logout session " + sessionStore.get(context, "id_tokenn"));
+    Http.Session session = ((PlayWebContext) context).getNativeSession();
+    System.err.println("Session is " + session.data());
     if (CommonHelper.isNotBlank(logoutUrl) && currentProfile instanceof CiviFormProfileData) {
       try {
         URI endSessionEndpoint = new URI(logoutUrl);
@@ -121,12 +126,13 @@ public final class CiviformOidcLogoutActionBuilder extends OidcLogoutActionBuild
           state = new State(getStateGenerator().get().generateValue(context, sessionStore));
         }
 
+        ImmutableMap<String, String> newParams = ImmutableMap.<String, String>builder().putAll(extraParams).put("id_token_hint", OidcProfileAdapter.token.serialize()).build();
         LogoutRequest logoutRequest =
             new CustomOidcLogoutRequest(
                 endSessionEndpoint,
                 postLogoutRedirectParam,
                 new URI(targetUrl),
-                extraParams,
+              newParams,
                 state);
 
         return Optional.of(

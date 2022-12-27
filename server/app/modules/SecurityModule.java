@@ -66,6 +66,7 @@ public class SecurityModule extends AbstractModule {
     checkNotNull(environment);
     this.configuration = checkNotNull(configuration);
     this.baseUrl = configuration.getString("base_url");
+    System.err.println("Base url is " + baseUrl);
   }
 
   @Override

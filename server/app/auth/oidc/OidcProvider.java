@@ -214,6 +214,7 @@ public abstract class OidcProvider implements Provider<OidcClient> {
     if (providerName.isPresent()) {
       client.setName(providerName.get());
     }
+    System.err.println("Callback url " + callbackURL);
     client.setCallbackUrl(callbackURL);
     client.setProfileCreator(getProfileAdapter(config, client));
     client.setCallbackUrlResolver(new PathParameterCallbackUrlResolver());

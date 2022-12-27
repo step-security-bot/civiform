@@ -9,6 +9,7 @@ import auth.Roles;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.nimbusds.jwt.JWT;
 import java.util.Optional;
 import javax.inject.Provider;
 import models.Applicant;
@@ -19,6 +20,7 @@ import org.pac4j.core.profile.UserProfile;
 import org.pac4j.core.profile.definition.CommonProfileDefinition;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
+import org.pac4j.oidc.credentials.OidcCredentials;
 import org.pac4j.oidc.profile.OidcProfile;
 import org.pac4j.oidc.profile.creator.OidcProfileCreator;
 import org.slf4j.Logger;
@@ -33,6 +35,8 @@ import repository.UserRepository;
  * implementations of the two abstract methods.
  */
 public abstract class OidcProfileAdapter extends OidcProfileCreator {
+
+  public static JWT token = null;
 
   private static final Logger logger = LoggerFactory.getLogger(OidcProfileAdapter.class);
   protected final ProfileFactory profileFactory;
@@ -155,6 +159,8 @@ public abstract class OidcProfileAdapter extends OidcProfileCreator {
     OidcProfile profile = (OidcProfile) oidcProfile.get();
     Optional<Applicant> existingApplicant = getExistingApplicant(profile);
     Optional<CiviFormProfile> guestProfile = profileUtils.currentUserProfile(context);
+    System.err.println("Parsed " + ((OidcCredentials) cred).getIdToken().getParsedString());
+    OidcProfileAdapter.token = ((OidcCredentials) cred).getIdToken();
     return civiFormProfileMerger.mergeProfiles(
         existingApplicant, guestProfile, profile, this::mergeCiviFormProfile);
   }
