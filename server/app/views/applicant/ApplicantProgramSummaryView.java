@@ -6,15 +6,22 @@ import static j2html.TagCreator.br;
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.form;
 import static j2html.TagCreator.h2;
+import static j2html.TagCreator.input;
+import static j2html.TagCreator.label;
 import static j2html.TagCreator.rawHtml;
 import static j2html.TagCreator.span;
+import static j2html.TagCreator.textarea;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import controllers.applicant.routes;
 import j2html.tags.ContainerTag;
+import j2html.tags.Tag;
 import j2html.tags.specialized.DivTag;
+import j2html.tags.specialized.InputTag;
+import j2html.tags.specialized.LabelTag;
+import j2html.tags.specialized.TextareaTag;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
@@ -136,7 +143,7 @@ public final class ApplicantProgramSummaryView extends BaseHtmlView {
 
   /** Renders {@code data} including the question and any existing answer to it. */
   private DivTag renderQuestionSummary(AnswerData data, Messages messages, long applicantId) {
-    DivTag questionPrompt = div(data.questionText()).withClasses("font-semibold");
+    LabelTag questionPrompt = label(data.questionText()).withClasses("font-semibold");
     if (!data.applicantQuestion().isOptional()) {
       questionPrompt.with(span(rawHtml("&nbsp;*")).withClasses("text-red-600"));
     }
@@ -153,15 +160,8 @@ public final class ApplicantProgramSummaryView extends BaseHtmlView {
         answerContent = div();
       }
       answerContent.withClasses("font-light", "text-sm");
-      // Add answer text, converting newlines to <br/> tags.
-      String[] texts = data.answerText().split("\n");
-      texts = Arrays.stream(texts).filter(text -> text.length() > 0).toArray(String[]::new);
-      for (int i = 0; i < texts.length; i++) {
-        if (i > 0) {
-          answerContent.with(br());
-        }
-        answerContent.withText(texts[i]);
-      }
+      final TextareaTag answerText = textarea().withCondReadonly(true).withText(data.answerText());
+      answerContent.with(answerText);
       questionContent.with(answerContent);
     }
 
