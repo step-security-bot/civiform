@@ -90,7 +90,7 @@ public final class ApplicantProgramsController extends CiviFormController {
             });
   }
 
-  @Secure
+/*  @Secure
   public CompletionStage<Result> view(Request request, long applicantId, long programId) {
     CompletionStage<Optional<String>> applicantStage = this.applicantService.getName(applicantId);
 
@@ -132,7 +132,7 @@ public final class ApplicantProgramsController extends CiviFormController {
               throw new RuntimeException(ex);
             });
   }
-
+*/
   @Secure
   public CompletionStage<Result> edit(Request request, long applicantId, long programId) {
 
