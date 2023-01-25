@@ -150,12 +150,12 @@ public final class ApplicantProgramSummaryView extends BaseHtmlView {
     if (!data.applicantQuestion().isOptional()) {
       questionPrompt.with(span(rawHtml("&nbsp;*")).withClasses("text-red-600"));
     }
-    DivTag questionContent = div(questionPrompt).withClasses("pr-2", "w-full");
+    DivTag questionContent = div(questionPrompt).withClasses("pr-2", "flex-grow");
 
     // Add existing answer.
     if (data.isAnswered()) {
       final ContainerTag answerContent;
-      answerContent = div().withClasses("font-light", "text-sm", "w-full", "block");
+      answerContent = div().withClasses("font-light", "text-sm");
       if (data.encodedFileKey().isPresent()) {
         String encodedFileKey = data.encodedFileKey().get();
         String fileLink = controllers.routes.FileController.show(applicantId, encodedFileKey).url();
@@ -171,7 +171,7 @@ public final class ApplicantProgramSummaryView extends BaseHtmlView {
                 .withId(answerInputId)
                 .withCondReadonly(true)
                 .withText(data.answerText())
-                .withClasses("block", "p-2", "w-full", "bg-transparent", "border-0");
+                .withClasses("p-2", "bg-transparent", "border-0", "w-full");
         answerContent.with(answerInput);
       }
       questionContent.with(answerContent);
