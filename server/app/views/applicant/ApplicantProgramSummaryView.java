@@ -2,7 +2,6 @@ package views.applicant;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static j2html.TagCreator.a;
-import static j2html.TagCreator.br;
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.form;
 import static j2html.TagCreator.h2;
@@ -17,13 +16,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import controllers.applicant.routes;
 import j2html.tags.ContainerTag;
-import j2html.tags.Tag;
 import j2html.tags.specialized.DivTag;
 import j2html.tags.specialized.InputTag;
 import j2html.tags.specialized.LabelTag;
 import j2html.tags.specialized.TextareaTag;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Optional;
 import play.i18n.Messages;
 import play.mvc.Http;
@@ -76,14 +73,17 @@ public final class ApplicantProgramSummaryView extends BaseHtmlView {
 
     DivTag applicationSummary = div().withId("application-summary").withClasses("mb-8");
     Optional<RepeatedEntity> previousRepeatedEntity = Optional.empty();
+    int answerIndex = 0;
     for (AnswerData answerData : params.summaryData()) {
       Optional<RepeatedEntity> currentRepeatedEntity = answerData.repeatedEntity();
       if (!currentRepeatedEntity.equals(previousRepeatedEntity)
           && currentRepeatedEntity.isPresent()) {
         applicationSummary.with(renderRepeatedEntitySection(currentRepeatedEntity.get(), messages));
       }
-      applicationSummary.with(renderQuestionSummary(answerData, messages, params.applicantId()));
+      applicationSummary.with(
+          renderQuestionSummary(answerData, messages, params.applicantId(), answerIndex));
       previousRepeatedEntity = currentRepeatedEntity;
+      answerIndex++;
     }
 
     // Add submit action (POST).
@@ -142,26 +142,38 @@ public final class ApplicantProgramSummaryView extends BaseHtmlView {
   }
 
   /** Renders {@code data} including the question and any existing answer to it. */
-  private DivTag renderQuestionSummary(AnswerData data, Messages messages, long applicantId) {
-    LabelTag questionPrompt = label(data.questionText()).withClasses("font-semibold");
+  private DivTag renderQuestionSummary(
+      AnswerData data, Messages messages, long applicantId, int answerIndex) {
+    String answerInputId = "answer" + Integer.toString(answerIndex);
+    LabelTag questionPrompt =
+        label(data.questionText()).withFor(answerInputId).withClasses("font-semibold");
     if (!data.applicantQuestion().isOptional()) {
       questionPrompt.with(span(rawHtml("&nbsp;*")).withClasses("text-red-600"));
     }
-    DivTag questionContent = div(questionPrompt).withClasses("pr-2");
+    DivTag questionContent = div(questionPrompt).withClasses("pr-2", "w-full");
 
     // Add existing answer.
     if (data.isAnswered()) {
       final ContainerTag answerContent;
+      answerContent = div().withClasses("font-light", "text-sm", "w-full", "block");
       if (data.encodedFileKey().isPresent()) {
         String encodedFileKey = data.encodedFileKey().get();
         String fileLink = controllers.routes.FileController.show(applicantId, encodedFileKey).url();
-        answerContent = a().withHref(fileLink);
+        final InputTag fileInput =
+            input()
+                .withId(answerInputId)
+                .withValue(data.answerText())
+                .withClasses("block", "p-2", "w-full", "bg-transparent", "border-0");
+        answerContent.with(a().withHref(fileLink).with(fileInput));
       } else {
-        answerContent = div();
+        final TextareaTag answerInput =
+            textarea()
+                .withId(answerInputId)
+                .withCondReadonly(true)
+                .withText(data.answerText())
+                .withClasses("block", "p-2", "w-full", "bg-transparent", "border-0");
+        answerContent.with(answerInput);
       }
-      answerContent.withClasses("font-light", "text-sm");
-      final TextareaTag answerText = textarea().withCondReadonly(true).withText(data.answerText());
-      answerContent.with(answerText);
       questionContent.with(answerContent);
     }
 
