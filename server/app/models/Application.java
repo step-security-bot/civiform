@@ -50,6 +50,7 @@ public class Application extends BaseModel {
   private String preferredLocale;
   private String submitterEmail;
   private String latestStatus;
+  private Boolean submittedByTrustedIntermediary;
 
   public Application(Applicant applicant, Program program, LifecycleStage lifecycleStage) {
     this.applicant = applicant;
@@ -71,6 +72,18 @@ public class Application extends BaseModel {
 
   public Application setSubmitterEmail(String submitterEmail) {
     this.submitterEmail = submitterEmail;
+    return this;
+  }
+
+  public Optional<Boolean> wasSubmittedByTrustedIntermediary() {
+    if (this.submittedByTrustedIntermediary == null && this.submitterEmail != null) {
+      this.submittedByTrustedIntermediary = !this.submitterEmail.equals(this.applicant.getAccount().getEmailAddress());
+    }
+    return Optional.ofNullable(this.submittedByTrustedIntermediary);
+  }
+
+  public Application setSubmittedByTrustedIntermediary(Boolean submittedByTrustedIntermediary) {
+    this.submittedByTrustedIntermediary = submittedByTrustedIntermediary;
     return this;
   }
 

@@ -110,6 +110,7 @@ public final class ApplicationRepository {
       application.setSubmitTimeToNow();
       if (tiSubmitterEmail.isPresent()) {
         application.setSubmitterEmail(tiSubmitterEmail.get());
+        application.setSubmittedByTrustedIntermediary(true);
       }
       application.save();
 

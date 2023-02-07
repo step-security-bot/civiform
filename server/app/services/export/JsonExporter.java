@@ -97,6 +97,8 @@ public final class JsonExporter {
         dateConverter.renderDateTimeDataOnly(application.getCreateTime()));
     jsonApplication.putString(
         Path.create("submitter_email"), application.getSubmitterEmail().orElse("Applicant"));
+    jsonApplication.putString(
+      Path.create("submittedByTrustedIntermediary"), "" + application.wasSubmittedByTrustedIntermediary());
 
     Path submitTimePath = Path.create("submit_time");
     Optional.ofNullable(application.getSubmitTime())
