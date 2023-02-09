@@ -240,7 +240,7 @@ placeholder.noDropdownSelection=다음 중 옵션을 선택하세요.
 #----------------------------------------------------------------------------------------------------------#
 # DATE QUESTION - text shown when answering a question where a user must select date. #
 #----------------------------------------------------------------------------------------------------------#
-validation.dateMisformatted=YYYY/MM/DD 형식으로 날짜를 입력하세요.
+validation.dateMisformatted=MM/DD/YYYY 형식으로 날짜를 입력하세요.
 
 #--------------------------------------------------------------------------------------------------------#
 # ENUMERATION QUESTION - text when viewing a question where a user must name entities, such as children. #

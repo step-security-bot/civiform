@@ -239,7 +239,7 @@ placeholder.noDropdownSelection=選擇一個選項：
 #----------------------------------------------------------------------------------------------------------#
 # DATE QUESTION - text shown when answering a question where a user must select date. #
 #----------------------------------------------------------------------------------------------------------#
-validation.dateMisformatted=日期格式必須為 YYYY/MM/DD。
+validation.dateMisformatted=日期格式必須為 MM/DD/YYYY。
 
 #--------------------------------------------------------------------------------------------------------#
 # ENUMERATION QUESTION - text when viewing a question where a user must name entities, such as children. #

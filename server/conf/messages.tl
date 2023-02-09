@@ -239,7 +239,7 @@ placeholder.noDropdownSelection=Pumili ng opsyon:
 #----------------------------------------------------------------------------------------------------------#
 # DATE QUESTION - text shown when answering a question where a user must select date. #
 #----------------------------------------------------------------------------------------------------------#
-validation.dateMisformatted=Please enter a date in the format YYYY/MM/DD.
+validation.dateMisformatted=Please enter a date in the format MM/DD/YYYY.
 
 #--------------------------------------------------------------------------------------------------------#
 # ENUMERATION QUESTION - text when viewing a question where a user must name entities, such as children. #
