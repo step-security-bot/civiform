@@ -264,7 +264,9 @@ public class AdminProgramControllerTest extends ResetPostgres {
                     "localizedDisplayDescription",
                     "New external program description",
                     "displayMode",
-                    DisplayMode.PUBLIC.getValue()));
+                    DisplayMode.PUBLIC.getValue(),
+                    "isCommonIntakeForm",
+                    "true"));
 
     Result result = controller.update(addCSRFToken(requestBuilder).build(), program.id);
 

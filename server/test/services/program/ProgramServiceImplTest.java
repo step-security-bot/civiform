@@ -117,7 +117,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
             "name",
             "description",
             "",
-            DisplayMode.PUBLIC.getValue());
+            DisplayMode.PUBLIC.getValue(),
+            false,
+            false);
 
     assertThat(result.hasResult()).isTrue();
     assertThat(result.getResult().id()).isNotNull();
@@ -132,7 +134,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
             "name",
             "description",
             "",
-            DisplayMode.PUBLIC.getValue());
+            DisplayMode.PUBLIC.getValue(),
+            false,
+            false);
 
     assertThat(result.hasResult()).isTrue();
     assertThat(result.getResult().blockDefinitions()).hasSize(1);
@@ -145,7 +149,7 @@ public class ProgramServiceImplTest extends ResetPostgres {
   @Test
   public void createProgram_returnsErrors() {
     ErrorAnd<ProgramDefinition, CiviFormError> result =
-        ps.createProgramDefinition("", "", "", "", "", DisplayMode.PUBLIC.getValue());
+        ps.createProgramDefinition("", "", "", "", "", DisplayMode.PUBLIC.getValue(), false, false);
 
     assertThat(result.hasResult()).isFalse();
     assertThat(result.isError()).isTrue();
@@ -160,7 +164,8 @@ public class ProgramServiceImplTest extends ResetPostgres {
   @Test
   public void createProgramWithoutDisplayMode_returnsError() {
     ErrorAnd<ProgramDefinition, CiviFormError> result =
-        ps.createProgramDefinition("test-program", "description", "name", "description", "", "");
+        ps.createProgramDefinition(
+            "test-program", "description", "name", "description", "", "", false, false);
 
     assertThat(result.hasResult()).isFalse();
     assertThat(result.isError()).isTrue();
@@ -176,7 +181,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
         "display name",
         "display description",
         "",
-        DisplayMode.PUBLIC.getValue());
+        DisplayMode.PUBLIC.getValue(),
+        false,
+        false);
 
     ErrorAnd<ProgramDefinition, CiviFormError> result =
         ps.createProgramDefinition(
@@ -185,7 +192,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
             "display name",
             "display description",
             "",
-            DisplayMode.PUBLIC.getValue());
+            DisplayMode.PUBLIC.getValue(),
+            false,
+            false);
 
     assertThat(result.hasResult()).isFalse();
     assertThat(result.isError()).isTrue();
@@ -203,7 +212,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
             "display name",
             "display description",
             "",
-            DisplayMode.PUBLIC.getValue());
+            DisplayMode.PUBLIC.getValue(),
+            false,
+            false);
 
     assertThat(result.hasResult()).isFalse();
     assertThat(result.isError()).isTrue();
@@ -225,7 +236,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
                 "display name",
                 "display description",
                 "",
-                DisplayMode.PUBLIC.getValue())
+                DisplayMode.PUBLIC.getValue(),
+                false,
+                false)
             .getResult();
     // Program name here is missing the extra space
     // so that the names are different but the resulting
@@ -242,11 +255,102 @@ public class ProgramServiceImplTest extends ResetPostgres {
             "display name",
             "display description",
             "",
-            DisplayMode.PUBLIC.getValue());
+            DisplayMode.PUBLIC.getValue(),
+            false,
+            false);
     assertThat(result.hasResult()).isFalse();
     assertThat(result.isError()).isTrue();
     assertThat(result.getErrors())
         .containsExactly(CiviFormError.of("A program URL of name-one already exists"));
+  }
+
+  @Test
+  public void createProgram_intakeFormDisabled() {
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.createProgramDefinition(
+            "name-one",
+            "description",
+            "display name",
+            "display description",
+            "",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled = */ false);
+    assertThat(result.hasResult()).isTrue();
+    assertThat(result.isError()).isFalse();
+    assertThat(result.getResult().programType()).isEqualTo(ProgramType.DEFAULT);
+  }
+
+  @Test
+  public void createProgram_allowsSettingCommonIntakeFormWhenNoneExists() {
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.createProgramDefinition(
+            "name-one",
+            "description",
+            "display name",
+            "display description",
+            "",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled = */ true);
+    assertThat(result.hasResult()).isTrue();
+    assertThat(result.isError()).isFalse();
+    assertThat(result.getResult().programType()).isEqualTo(ProgramType.COMMON_INTAKE_FORM);
+  }
+
+  @Test
+  public void createProgram_allowsSettingDefaultProgram() {
+    ps.createProgramDefinition(
+        "name-one",
+        "description",
+        "display name",
+        "display description",
+        "",
+        DisplayMode.PUBLIC.getValue(),
+        /* isCommonIntakeForm= */ true,
+        /* isIntakeFormEnabled = */ true);
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.createProgramDefinition(
+            "name-two",
+            "description",
+            "display name",
+            "display description",
+            "",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ false,
+            /* isIntakeFormEnabled = */ true);
+
+    assertThat(result.hasResult()).isTrue();
+    assertThat(result.isError()).isFalse();
+    assertThat(result.getResult().programType()).isEqualTo(ProgramType.DEFAULT);
+  }
+
+  @Test
+  public void createProgram_protectsAgainstSettingMultipleCommonIntakeForms() {
+    ps.createProgramDefinition(
+        "name-one",
+        "description",
+        "display name",
+        "display description",
+        "",
+        DisplayMode.PUBLIC.getValue(),
+        /* isCommonIntakeForm= */ true,
+        /* isIntakeFormEnabled= */ true);
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.createProgramDefinition(
+            "name-two",
+            "description",
+            "display name",
+            "display description",
+            "",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled= */ true);
+    assertThat(result.hasResult()).isFalse();
+    assertThat(result.isError()).isTrue();
+    assertThat(result.getErrors())
+        .containsExactly(
+            CiviFormError.of("A program set as the Common Intake Form already exists"));
   }
 
   @Test
@@ -260,7 +364,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
                     "name",
                     "description",
                     "",
-                    DisplayMode.PUBLIC.getValue()))
+                    DisplayMode.PUBLIC.getValue(),
+                    false,
+                    false))
         .isInstanceOf(ProgramNotFoundException.class)
         .hasMessage("Program not found for ID: 1");
   }
@@ -277,7 +383,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
             "name",
             "description",
             "",
-            DisplayMode.PUBLIC.getValue());
+            DisplayMode.PUBLIC.getValue(),
+            false,
+            false);
 
     assertThat(result.hasResult()).isTrue();
     ProgramDefinition updatedProgram = result.getResult();
@@ -306,7 +414,9 @@ public class ProgramServiceImplTest extends ResetPostgres {
                 "name",
                 "description",
                 "",
-                DisplayMode.PUBLIC.getValue())
+                DisplayMode.PUBLIC.getValue(),
+                false,
+                false)
             .getResult();
 
     QuestionDefinition foundQuestion =
@@ -320,7 +430,7 @@ public class ProgramServiceImplTest extends ResetPostgres {
 
     ErrorAnd<ProgramDefinition, CiviFormError> result =
         ps.updateProgramDefinition(
-            program.id(), Locale.US, "", "", "", "", DisplayMode.PUBLIC.getValue());
+            program.id(), Locale.US, "", "", "", "", DisplayMode.PUBLIC.getValue(), false, false);
 
     assertThat(result.hasResult()).isFalse();
     assertThat(result.isError()).isTrue();
@@ -337,6 +447,141 @@ public class ProgramServiceImplTest extends ResetPostgres {
     ProgramDefinition found = ps.getProgramDefinition(programDefinition.id());
 
     assertThat(found.adminName()).isEqualTo(programDefinition.adminName());
+  }
+
+  @Test
+  public void updateProgram_intakeFormDisabled() throws Exception {
+    ProgramDefinition program = ProgramBuilder.newDraftProgram().buildDefinition();
+
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.updateProgramDefinition(
+            program.id(),
+            Locale.US,
+            "a",
+            "a",
+            "a",
+            "a",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled= */ false);
+
+    assertThat(result.hasResult()).isTrue();
+    assertThat(result.isError()).isFalse();
+    assertThat(result.getResult().programType()).isEqualTo(ProgramType.DEFAULT);
+  }
+
+  @Test
+  public void updateProgram_allowsSettingProgramAsCommonIntakeFormWhenNoneExists()
+      throws Exception {
+    ProgramDefinition program = ProgramBuilder.newDraftProgram().buildDefinition();
+
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.updateProgramDefinition(
+            program.id(),
+            Locale.US,
+            "a",
+            "a",
+            "a",
+            "a",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled= */ true);
+
+    assertThat(result.hasResult()).isTrue();
+    assertThat(result.isError()).isFalse();
+    assertThat(result.getResult().programType()).isEqualTo(ProgramType.COMMON_INTAKE_FORM);
+  }
+
+  @Test
+  public void updateProgram_protectsAgainstSettingMultipleCommonIntakeForms() throws Exception {
+    ps.createProgramDefinition(
+        "name-one",
+        "description",
+        "display name",
+        "display description",
+        "",
+        DisplayMode.PUBLIC.getValue(),
+        /* isCommonIntakeForm= */ true,
+        /* isIntakeFormEnabled= */ true);
+
+    ProgramDefinition program = ProgramBuilder.newDraftProgram().buildDefinition();
+
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.updateProgramDefinition(
+            program.id(),
+            Locale.US,
+            "a",
+            "a",
+            "a",
+            "a",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled= */ true);
+
+    assertThat(result.hasResult()).isFalse();
+    assertThat(result.isError()).isTrue();
+    assertThat(result.getErrors())
+        .containsExactly(
+            CiviFormError.of("A program set as the Common Intake Form already exists"));
+  }
+
+  @Test
+  public void updateProgram_allowsUpdatingCommonIntakeForm() throws Exception {
+    ErrorAnd<ProgramDefinition, CiviFormError> commonIntakeForm =
+        ps.createProgramDefinition(
+            "name-one",
+            "description",
+            "display name",
+            "display description",
+            "",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled= */ true);
+
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.updateProgramDefinition(
+            commonIntakeForm.getResult().id(),
+            Locale.US,
+            "a",
+            "a",
+            "a",
+            "a",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled= */ true);
+
+    assertThat(result.hasResult()).isTrue();
+    assertThat(result.isError()).isFalse();
+  }
+
+  @Test
+  public void updateProgram_allowsUpdatingCommonIntakeFormToDefaultProgram() throws Exception {
+    ErrorAnd<ProgramDefinition, CiviFormError> commonIntakeForm =
+        ps.createProgramDefinition(
+            "name-one",
+            "description",
+            "display name",
+            "display description",
+            "",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ true,
+            /* isIntakeFormEnabled= */ true);
+
+    ErrorAnd<ProgramDefinition, CiviFormError> result =
+        ps.updateProgramDefinition(
+            commonIntakeForm.getResult().id(),
+            Locale.US,
+            "a",
+            "a",
+            "a",
+            "a",
+            DisplayMode.PUBLIC.getValue(),
+            /* isCommonIntakeForm= */ false,
+            /* isIntakeFormEnabled= */ true);
+
+    assertThat(result.hasResult()).isTrue();
+    assertThat(result.isError()).isFalse();
+    assertThat(result.getResult().programType()).isEqualTo(ProgramType.DEFAULT);
   }
 
   @Test
@@ -642,7 +887,14 @@ public class ProgramServiceImplTest extends ResetPostgres {
   public void setBlockQuestions_withBogusBlockId_throwsProgramBlockDefinitionNotFoundException() {
     ProgramDefinition p =
         ps.createProgramDefinition(
-                "name", "description", "name", "description", "", DisplayMode.PUBLIC.getValue())
+                "name",
+                "description",
+                "name",
+                "description",
+                "",
+                DisplayMode.PUBLIC.getValue(),
+                false,
+                false)
             .getResult();
     assertThatThrownBy(() -> ps.setBlockQuestions(p.id(), 100L, ImmutableList.of()))
         .isInstanceOf(ProgramBlockDefinitionNotFoundException.class)

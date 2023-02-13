@@ -146,26 +146,9 @@ public final class ProgramServiceImpl implements ProgramService {
       String defaultDisplayName,
       String defaultDisplayDescription,
       String externalLink,
-      String displayMode) {
-    return createProgramDefinition(
-        adminName,
-        adminDescription,
-        defaultDisplayName,
-        defaultDisplayDescription,
-        externalLink,
-        displayMode,
-        /* isCommonIntakeForm= */ false);
-  }
-
-  @Override
-  public ErrorAnd<ProgramDefinition, CiviFormError> createProgramDefinition(
-      String adminName,
-      String adminDescription,
-      String defaultDisplayName,
-      String defaultDisplayDescription,
-      String externalLink,
       String displayMode,
-      Boolean isCommonIntakeForm) {
+      Boolean isCommonIntakeForm,
+      Boolean isIntakeFormEnabled) {
 
     ImmutableSet.Builder<CiviFormError> errorsBuilder = ImmutableSet.builder();
 
@@ -190,10 +173,15 @@ public final class ProgramServiceImpl implements ProgramService {
     if (adminDescription.isBlank()) {
       errorsBuilder.add(CiviFormError.of("A program note is required"));
     }
-    if (isCommonIntakeForm && programRepository.commonIntakeFormExists()) {
-      errorsBuilder.add(CiviFormError.of("A program set as the Common Intake Form already exists"));
+    ProgramType programType = ProgramType.DEFAULT;
+    if (isIntakeFormEnabled && isCommonIntakeForm) {
+      if (programRepository.commonIntakeFormExists()) {
+        errorsBuilder.add(
+            CiviFormError.of("A program set as the Common Intake Form already exists"));
+      } else {
+        programType = ProgramType.COMMON_INTAKE_FORM;
+      }
     }
-
     ImmutableSet<CiviFormError> errors = errorsBuilder.build();
     if (!errors.isEmpty()) {
       return ErrorAnd.error(errors);
@@ -217,7 +205,7 @@ public final class ProgramServiceImpl implements ProgramService {
             displayMode,
             ImmutableList.of(emptyBlock),
             versionRepository.getDraftVersion(),
-            isCommonIntakeForm ? ProgramType.COMMON_INTAKE_FORM : ProgramType.DEFAULT);
+            programType);
 
     return ErrorAnd.of(programRepository.insertProgramSync(program).getProgramDefinition());
   }
@@ -231,7 +219,8 @@ public final class ProgramServiceImpl implements ProgramService {
       String displayDescription,
       String externalLink,
       String displayMode,
-      Boolean isCommonIntakeForm)
+      Boolean isCommonIntakeForm,
+      Boolean isIntakeFormEnabled)
       throws ProgramNotFoundException {
     ProgramDefinition programDefinition = getProgramDefinition(programId);
     ImmutableSet.Builder<CiviFormError> errorsBuilder = ImmutableSet.builder();
@@ -247,8 +236,14 @@ public final class ProgramServiceImpl implements ProgramService {
     if (adminDescription.isBlank()) {
       errorsBuilder.add(CiviFormError.of("A program note is required"));
     }
-    if (isCommonIntakeForm && programRepository.commonIntakeFormExists() && !programDefinition.isCommonIntakeForm()) {
-      errorsBuilder.add(CiviFormError.of("A program set as the Common Intake Form already exists"));
+    ProgramType programType = ProgramType.DEFAULT;
+    if (isIntakeFormEnabled && isCommonIntakeForm) {
+      if (programRepository.commonIntakeFormExists() && !programDefinition.isCommonIntakeForm()) {
+        errorsBuilder.add(
+            CiviFormError.of("A program set as the Common Intake Form already exists"));
+      } else {
+        programType = ProgramType.COMMON_INTAKE_FORM;
+      }
     }
     ImmutableSet<CiviFormError> errors = errorsBuilder.build();
     if (!errors.isEmpty()) {
@@ -266,8 +261,7 @@ public final class ProgramServiceImpl implements ProgramService {
                     .updateTranslation(locale, displayDescription))
             .setExternalLink(externalLink)
             .setDisplayMode(DisplayMode.valueOf(displayMode))
-            .setProgramType(
-                isCommonIntakeForm ? ProgramType.COMMON_INTAKE_FORM : ProgramType.DEFAULT)
+            .setProgramType(programType)
             .build()
             .toProgram();
     return ErrorAnd.of(
