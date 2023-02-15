@@ -163,7 +163,8 @@ public class ApplicantProgramReviewController extends CiviFormController {
             applicantId,
             programId,
             submittingProfile,
-            featureFlags.isProgramEligibilityConditionsEnabled(request));
+            featureFlags.isProgramEligibilityConditionsEnabled(request),
+            featureFlags.isNongatedEligibilityEnabled(request));
     return submitApp
         .thenApplyAsync(
             application -> {

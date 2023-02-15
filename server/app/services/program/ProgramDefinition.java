@@ -81,6 +81,8 @@ public abstract class ProgramDefinition {
 
   public abstract ProgramType programType();
 
+  public abstract Boolean isEligibilityGating();
+
   /**
    * Returns a program definition with block definitions such that each enumerator block is
    * immediately followed by all of its repeated and nested repeated blocks. This method should be
@@ -695,6 +697,8 @@ public abstract class ProgramDefinition {
     public abstract Builder setLastModifiedTime(@Nullable Instant lastModifiedTime);
 
     public abstract Builder setProgramType(ProgramType programType);
+
+    public abstract Builder setIsEligibilityGating(Boolean isEligibilityGating);
 
     public abstract ProgramDefinition build();
 

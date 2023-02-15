@@ -95,6 +95,8 @@ public class Program extends BaseModel {
 
   @Constraints.Required private ProgramType programType;
 
+  private Boolean isEligibilityGating;
+
   @ManyToMany(mappedBy = "programs")
   private List<Version> versions;
 
@@ -134,6 +136,7 @@ public class Program extends BaseModel {
     this.statusDefinitions = definition.statusDefinitions();
     this.displayMode = definition.displayMode().getValue();
     this.programType = definition.programType();
+    this.isEligibilityGating = definition.isEligibilityGating();
 
     orderBlockDefinitionsBeforeUpdate();
 
@@ -182,6 +185,7 @@ public class Program extends BaseModel {
     slug = programDefinition.slug();
     displayMode = programDefinition.displayMode().getValue();
     programType = programDefinition.programType();
+    isEligibilityGating = programDefinition.isEligibilityGating();
 
     orderBlockDefinitionsBeforeUpdate();
   }
@@ -202,7 +206,8 @@ public class Program extends BaseModel {
             .setDisplayMode(DisplayMode.valueOf(displayMode))
             .setCreateTime(createTime)
             .setLastModifiedTime(lastModifiedTime)
-            .setProgramType(programType);
+            .setProgramType(programType)
+            .setIsEligibilityGating(isEligibilityGating);
 
     setLocalizedName(builder);
     setLocalizedDescription(builder);

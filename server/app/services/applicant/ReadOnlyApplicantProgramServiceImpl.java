@@ -225,6 +225,11 @@ public class ReadOnlyApplicantProgramServiceImpl implements ReadOnlyApplicantPro
   }
 
   @Override
+  public boolean isProgramEligibilityGating() {
+    return programDefinition.isEligibilityGating();
+  }
+
+  @Override
   public ImmutableList<AnswerData> getSummaryData() {
     // TODO: We need to be able to use this on the admin side with admin-specific l10n.
     ImmutableList.Builder<AnswerData> builder = new ImmutableList.Builder<>();

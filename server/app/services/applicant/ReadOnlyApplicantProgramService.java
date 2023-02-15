@@ -102,4 +102,6 @@ public interface ReadOnlyApplicantProgramService {
    * otherwise.
    */
   boolean preferredLanguageSupported();
+
+  boolean isProgramEligibilityGating();
 }
