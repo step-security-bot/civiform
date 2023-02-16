@@ -302,7 +302,10 @@ public final class ApplicantService {
       boolean nongatedEligibilityEnabled) {
     if (submitterProfile.isTrustedIntermediary()) {
       return getReadOnlyApplicantProgramService(applicantId, programId)
-          .thenCompose(ro -> validateApplicationForSubmission(ro, eligibilityFeatureEnabled, nongatedEligibilityEnabled))
+          .thenCompose(
+              ro ->
+                  validateApplicationForSubmission(
+                      ro, eligibilityFeatureEnabled, nongatedEligibilityEnabled))
           .thenCompose(v -> submitterProfile.getAccount())
           .thenComposeAsync(
               account ->
@@ -314,7 +317,10 @@ public final class ApplicantService {
     }
 
     return getReadOnlyApplicantProgramService(applicantId, programId)
-        .thenCompose(ro -> validateApplicationForSubmission(ro, eligibilityFeatureEnabled, nongatedEligibilityEnabled))
+        .thenCompose(
+            ro ->
+                validateApplicationForSubmission(
+                    ro, eligibilityFeatureEnabled, nongatedEligibilityEnabled))
         .thenCompose(
             v ->
                 submitApplication(
@@ -366,7 +372,9 @@ public final class ApplicantService {
     if (!roApplicantProgramService.getFirstIncompleteBlockExcludingStatic().isEmpty()) {
       throw new ApplicationOutOfDateException();
     }
-    if (eligibilityFeatureEnabled && nongatedEligibilityEnabled &&!roApplicantProgramService.isProgramEligibilityGating()) {
+    if (eligibilityFeatureEnabled
+        && nongatedEligibilityEnabled
+        && !roApplicantProgramService.isProgramEligibilityGating()) {
       return CompletableFuture.completedFuture(null);
     }
     if (eligibilityFeatureEnabled && !roApplicantProgramService.isApplicationEligible()) {

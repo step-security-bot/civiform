@@ -402,7 +402,8 @@ public final class ApplicantProgramBlocksController extends CiviFormController {
 
     if (featureFlags.isProgramEligibilityConditionsEnabled(request)
         && !roApplicantProgramService.isBlockEligible(blockId)
-        && (!featureFlags.isNongatedEligibilityEnabled(request) || roApplicantProgramService.isProgramEligibilityGating())) {
+        && (!featureFlags.isNongatedEligibilityEnabled(request)
+            || roApplicantProgramService.isProgramEligibilityGating())) {
       CiviFormProfile submittingProfile = profileUtils.currentUserProfile(request).orElseThrow();
       return supplyAsync(
           () ->

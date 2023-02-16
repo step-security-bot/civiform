@@ -95,7 +95,7 @@ public class Program extends BaseModel {
 
   @Constraints.Required private ProgramType programType;
 
-  private Boolean isEligibilityGating;
+  @Constraints.Required private Boolean isEligibilityGating;
 
   @ManyToMany(mappedBy = "programs")
   private List<Version> versions;
