@@ -169,6 +169,7 @@ public class Program extends BaseModel {
     this.statusDefinitions = new StatusDefinitions();
     this.versions.add(associatedVersion);
     this.programType = programType;
+    this.isEligibilityGating = true;
   }
 
   /** Populates column values from {@link ProgramDefinition} */
