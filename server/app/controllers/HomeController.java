@@ -12,6 +12,9 @@ import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import org.pac4j.core.exception.TechnicalException;
 import org.pac4j.play.java.Secure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import play.i18n.Lang;
 import play.i18n.MessagesApi;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
@@ -22,6 +25,8 @@ import views.LoginForm;
 
 /** Controller for handling methods for the landing pages. */
 public class HomeController extends Controller {
+  private static final Logger logger = LoggerFactory.getLogger(
+    HomeController.class);
 
   private final LoginForm loginForm;
   private final ProfileUtils profileUtils;
@@ -49,6 +54,13 @@ public class HomeController extends Controller {
   }
 
   public CompletionStage<Result> index(Http.Request request) {
+    Optional<String> acceptLanguageHeader = request.header("accept-language");
+    if (acceptLanguageHeader.isPresent()) {
+      logger.info("HomeControlller: accept-language header: " + acceptLanguageHeader.get());
+    } else {
+      logger.info("HomeControlller: accept-language header not found");
+    }
+
     Optional<CiviFormProfile> maybeProfile = profileUtils.currentUserProfile(request);
 
     if (maybeProfile.isEmpty()) {
@@ -91,6 +103,9 @@ public class HomeController extends Controller {
 
   public Result loginForm(Http.Request request, Optional<String> message)
       throws TechnicalException {
+    // String acceptLanguageHeader = request.header("accept-language").orElse("en-US");
+    // Lang acceptLanguageHeaderLang = Lang.forCode(acceptLanguageHeader);
+
     return ok(loginForm.render(request, messagesApi.preferred(request), message));
   }
 

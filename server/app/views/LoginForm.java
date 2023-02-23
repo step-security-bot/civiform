@@ -12,6 +12,7 @@ import static j2html.TagCreator.text;
 import auth.AuthIdentityProviderName;
 import auth.FakeAdminClient;
 import auth.GuestClient;
+import auth.oidc.OidcProfileAdapter;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers.routes;
@@ -20,6 +21,8 @@ import j2html.tags.specialized.ATag;
 import j2html.tags.specialized.ButtonTag;
 import j2html.tags.specialized.DivTag;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.i18n.Messages;
 import play.mvc.Http;
 import play.twirl.api.Content;
@@ -29,6 +32,8 @@ import views.style.BaseStyles;
 
 /** Renders a page for login. */
 public class LoginForm extends BaseHtmlView {
+  private static final Logger logger = LoggerFactory.getLogger(
+    LoginForm.class);
 
   private final BaseHtmlLayout layout;
   private final String civiformImageTag;
@@ -70,6 +75,13 @@ public class LoginForm extends BaseHtmlView {
   }
 
   public Content render(Http.Request request, Messages messages, Optional<String> message) {
+    Optional<String> acceptLanguageHeader = request.header("accept-language");
+    if (acceptLanguageHeader.isPresent()) {
+      logger.info("LoginForm: accept-language header: " + acceptLanguageHeader.get());
+    } else {
+      logger.info("LoginForm: accept-language header not found");
+    }
+
     String title = messages.at(MessageKey.TITLE_LOGIN.getKeyName());
 
     HtmlBundle htmlBundle = this.layout.getBundle().setTitle(title);
