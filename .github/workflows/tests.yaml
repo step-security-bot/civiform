@@ -83,6 +83,12 @@ jobs:
           DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           DOCKER_HUB_USERNAME: civiform
         run: bin/build-localstack-env
+      - name: Build esri-mock-service
+        env:
+          DOCKER_BUILDKIT: 1
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          DOCKER_HUB_USERNAME: civiform
+        run: bin/build-esri-mock-service
       - name: Bring up test env with Localstack
         run: bin/run-browser-test-env --aws --ci
       - name: Run browser tests with Localstack
@@ -140,6 +146,12 @@ jobs:
           DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           DOCKER_HUB_USERNAME: civiform
         run: bin/build-localstack-env
+      - name: Build esri-mock-service
+        env:
+          DOCKER_BUILDKIT: 1
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          DOCKER_HUB_USERNAME: civiform
+        run: bin/build-esri-mock-service
       - name: Bring up test env with Azurite
         run: bin/run-browser-test-env --azure --ci
       - name: Run browser tests with Azurite

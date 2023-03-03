@@ -62,3 +62,7 @@ server/code-coverage/*
 
 # Compiled css
 tailwind.css
+
+# Python
+.venv/
+__pycache__/

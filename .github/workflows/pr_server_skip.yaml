@@ -14,6 +14,7 @@ on:
       - 'bin/**'
       - 'browser-test/**'
       - 'test-support/**'
+      - 'esri-mock-service/**'
       - 'Dockerfile'
       - 'prod.Dockerfile'
       - '.github/workflows/**'

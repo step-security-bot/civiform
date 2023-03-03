@@ -46,6 +46,9 @@ services:
     ports:
       - 10000:10000
 
+  esri-mock-service:
+    image: esri-mock-service
+
   db:
     image: postgres:12.14
     stdin_open: true

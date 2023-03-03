@@ -37,6 +37,9 @@ services:
       # Use an explicit port to not conflict with other test instances.
       - OIDC_PORT=3390
 
+  esri-mock-service:
+    image: esri-mock-service
+
   db:
     image: postgres:12.14
     restart: always
@@ -52,6 +55,7 @@ services:
     links:
       - 'db:database'
       - 'dev-oidc'
+      - 'esri-mock-service'
     expose:
       - '9000'
       - '8457'
@@ -108,4 +112,6 @@ services:
       - WHITELABEL_CIVIC_ENTITY_SHORT_NAME
       - WHITELABEL_CIVIC_ENTITY_FULL_NAME
       - FAVICON_URL
+      - ESRI_FIND_ADDRESS_CANDIDATES_URL=http://esri-mock-service:8000/findAddressCandidates
+      - ESRI_ADDRESS_SERVICE_AREA_VALIDATION_URLS.0=http://esri-mock-service:8000/serviceAreaFeatures
     entrypoint: /bin/bash
