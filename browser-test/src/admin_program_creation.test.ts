@@ -1,5 +1,6 @@
 import {
   createTestContext,
+  disableFeatureFlag,
   enableFeatureFlag,
   loginAsAdmin,
   validateScreenshot,
@@ -35,6 +36,35 @@ describe('program creation', () => {
       page,
       'program-creation-static-question-with-formatting',
     )
+  })
+
+  it('create program and search for questions', async () => {
+    const {page, adminQuestions, adminPrograms} = ctx
+
+    await loginAsAdmin(page)
+
+    await adminQuestions.addAddressQuestion({
+      questionName: 'address-w-admin-note',
+      description: 'this is a note',
+    })
+
+    const programName = 'search-program'
+    await adminPrograms.addProgram(programName)
+    await adminPrograms.editProgramBlock(
+      programName,
+      'search program description',
+    )
+
+    await adminPrograms.openQuestionBank()
+
+    expect(await page.innerText('id=question-bank-questions')).toContain(
+      'address-w-admin-note',
+    )
+    expect(await page.innerText('id=question-bank-questions')).toContain(
+      'this is a note',
+    )
+
+    await validateScreenshot(page, 'open-question-search')
   })
 
   it('create program with enumerator and repeated questions', async () => {
@@ -236,6 +266,7 @@ describe('program creation', () => {
     const {page, adminQuestions, adminPrograms} = ctx
 
     await loginAsAdmin(page)
+    await disableFeatureFlag(page, 'esri_address_correction_enabled')
 
     await adminQuestions.addAddressQuestion({questionName: 'acd-address'})
 
