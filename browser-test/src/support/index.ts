@@ -3,6 +3,7 @@ import {
   Browser,
   BrowserContext,
   chromium,
+  devices,
   Frame,
   Page,
   PageScreenshotOptions,
@@ -99,7 +100,9 @@ function makeBrowserContext(browser: Browser): Promise<BrowserContext> {
       },
     })
   } else {
+    const iPhoneX = devices['iPhone X'];
     return browser.newContext({
+      ...iPhoneX,
       acceptDownloads: true,
     })
   }
