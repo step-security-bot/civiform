@@ -305,7 +305,7 @@ public class AdminProgramControllerTest extends ResetPostgres {
 
     RequestBuilder request =
         Helpers.fakeRequest()
-            .session(FeatureFlag.NONGATED_ELIGIBILITY_ENABLED.getSymbol(), "true")
+            .session(FeatureFlag.nongated_eligibility_enabled.name(), "true")
             .bodyForm(ImmutableMap.of("eligibilityIsGating", "false"));
     Result result = controller.setEligibilityIsGating(addCSRFToken(request).build(), program.id);
 
@@ -325,7 +325,7 @@ public class AdminProgramControllerTest extends ResetPostgres {
 
     RequestBuilder request =
         Helpers.fakeRequest()
-            .session(FeatureFlag.NONGATED_ELIGIBILITY_ENABLED.getSymbol(), "false")
+            .session(FeatureFlag.nongated_eligibility_enabled.name(), "false")
             .bodyForm(ImmutableMap.of("eligibilityIsGating", "false"));
     Result result = controller.setEligibilityIsGating(addCSRFToken(request).build(), program.id);
 
