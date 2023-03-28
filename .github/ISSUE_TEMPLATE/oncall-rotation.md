@@ -29,7 +29,7 @@ Resources:
 
 ## General
 
-- [ ] Create an Oncall issue for the next rotation
+- [ ] Create an Oncall issue for the next rotation (and close your issue once your rotation is over)
 - [ ] Check Security lists daily
 - [ ] Check #ci Slack channel daily to monitor failed pushes
 - [ ] Check Dependency updates once
