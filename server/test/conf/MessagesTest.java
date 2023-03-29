@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,6 +28,9 @@ public class MessagesTest {
   // The file path of the primary language file.
   private static final String PRIMARY_LANGUAGE_FILE = "conf/messages";
 
+  // The file path of the en-US file.
+  private static final String EN_US_LANGUAGE_FILE = "conf/messages.en-US";
+
   // A set of keys that are present in the primary language file, but for which
   // we do *not* expect translations to be present. This is useful for keys that
   // are checked into the primary language file but for which
@@ -38,19 +42,14 @@ public class MessagesTest {
   public void ignoreListIsUpToDate() throws Exception {
     // Assert that we don't have keys in the ignore list that aren't in the
     // primary language file.
-    assertThat(keysInFile(PRIMARY_LANGUAGE_FILE)).containsAll(IGNORE_LIST);
+    assertThat(keysInFile(PRIMARY_LANGUAGE_FILE, /* excludeIgnoredKeys= */ false))
+        .containsAll(IGNORE_LIST);
   }
 
   @Test
   @Parameters(method = "otherLanguageFiles")
   public void messages_keysInPrimaryFileInAllOtherFiles(String otherLanguageFile) throws Exception {
     TreeSet<String> keysInPrimaryFile = keysInFile(PRIMARY_LANGUAGE_FILE);
-    // Pretend that the keys in IGNORE_LIST are not in the primary message
-    // file. These may be keys for features in development, for example. Keys
-    // should only be in IGNORE_LIST temporarily, until translations come in
-    // and are merged.
-    keysInPrimaryFile.removeAll(IGNORE_LIST);
-
     TreeSet<String> keysInForeignLangFile = keysInFile(otherLanguageFile);
 
     // Checks that the language file contains exactly the same message keys as the
@@ -60,20 +59,64 @@ public class MessagesTest {
         .containsExactlyElementsOf(keysInForeignLangFile);
   }
 
+  @Test
+  public void messages_valuesEqualMessagesEnUsValues() throws Exception {
+    TreeMap<String, String> entriesInPrimaryLanguageFile = entriesInFile(PRIMARY_LANGUAGE_FILE);
+    TreeMap<String, String> entriesInEnUsLanguageFile = entriesInFile(EN_US_LANGUAGE_FILE);
+
+    assertThat(entriesInPrimaryLanguageFile)
+        .withFailMessage(
+            () -> {
+              TreeMap<String, String> primaryLangKeysEntriesCopy =
+                  new TreeMap<>(entriesInPrimaryLanguageFile);
+              entriesInEnUsLanguageFile.forEach(primaryLangKeysEntriesCopy::remove);
+              if (!primaryLangKeysEntriesCopy.isEmpty()) {
+                return String.format(
+                    "Entries with keys %s differ between primary language file and %s. Make sure"
+                        + " these entries match to resolve this issue.",
+                    primaryLangKeysEntriesCopy.keySet(), EN_US_LANGUAGE_FILE);
+              }
+              return "Could not generate failure message.";
+            })
+        .containsExactlyEntriesOf(entriesInEnUsLanguageFile);
+  }
+
+  private static TreeSet<String> keysInFile(String filePath) throws Exception {
+    return keysInFile(filePath, /* excludeIgnoredKeys=*/ true);
+  }
+
+  private static TreeMap<String, String> entriesInFile(String filePath) throws Exception {
+    return entriesInFile(filePath, /* excludeIgnoredKeys=*/ true);
+  }
+
+  private static TreeSet<String> keysInFile(String filePath, boolean excludeIgnoredKeys)
+      throws Exception {
+    return new TreeSet<>(entriesInFile(filePath, excludeIgnoredKeys).keySet());
+  }
+
   /**
-   * Returns the set of String keys present in a given messages file. The keys are returned in
+   * Returns the String-String entries present in a given messages file. The keys are returned in
    * sorted order, even though the {@link Properties} class reads them into a HashMap with no
    * ordering guarantees (regardless of the ordering of the language files themselves).
    */
-  private static TreeSet<String> keysInFile(String filePath) throws Exception {
+  private static TreeMap<String, String> entriesInFile(String filePath, boolean excludeIgnoredKeys)
+      throws Exception {
     InputStream input = new FileInputStream(filePath);
 
     Properties prop = new Properties();
     prop.load(input);
 
-    return prop.keySet().stream()
-        .map(Object::toString)
-        .collect(Collectors.toCollection(TreeSet::new));
+    return prop.entrySet().stream()
+        // Pretend that the keys in IGNORE_LIST are not in any files. These may be
+        // keys for features in development, for example. Keys should only be in
+        // IGNORE_LIST temporarily, until translations come in and are merged.
+        .filter(entry -> !excludeIgnoredKeys || !IGNORE_LIST.contains((String) entry.getKey()))
+        .collect(
+            Collectors.toMap(
+                entry -> (String) entry.getKey(),
+                entry -> (String) entry.getValue(),
+                (v1, v2) -> v1,
+                TreeMap::new));
   }
 
   // The file paths of all non-primary language files, including `en-US`.
