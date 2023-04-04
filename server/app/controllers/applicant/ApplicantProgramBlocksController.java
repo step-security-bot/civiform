@@ -157,7 +157,6 @@ public final class ApplicantProgramBlocksController extends CiviFormController {
   @Secure
   public CompletionStage<Result> confirmAddress(
       Request request, long applicantId, long programId, String blockId, boolean inReview) {
-
     DynamicForm form = formFactory.form().bindFromRequest(request);
     String selectedAddress = form.get(AddressCorrectionBlockView.SELECTED_ADDRESS_NAME);
     Optional<String> maybeAddressJson = request.session().get(ADDRESS_JSON_SESSION_KEY);
@@ -166,6 +165,18 @@ public final class ApplicantProgramBlocksController extends CiviFormController {
         addressSuggestionJsonSerializer.deserialize(
             maybeAddressJson.orElseThrow(() -> new RuntimeException("Address JSON missing")));
 
+    return confirmAddressWithSuggestions(
+        request, applicantId, programId, blockId, inReview, selectedAddress, suggestions);
+  }
+
+  private CompletionStage<Result> confirmAddressWithSuggestions(
+      Request request,
+      long applicantId,
+      long programId,
+      String blockId,
+      boolean inReview,
+      String selectedAddress,
+      ImmutableList<AddressSuggestion> suggestions) {
     CompletableFuture<Optional<String>> applicantNameStage =
         applicantService.getName(applicantId).toCompletableFuture();
 
@@ -513,23 +524,16 @@ public final class ApplicantProgramBlocksController extends CiviFormController {
               .createAddressQuestion();
 
       if (addressQuestion.needsAddressCorrection()) {
-
-        // issue is that we need the data in here to determine where to redirect to...
-        // data is fetched async... i think?
-        // but then want to continue on with flow...
-        // what do i have before i enter this....
-        // i could get the address Suggestion group. i think i have that sync. and I have the
-        // original address i think...
-
         return applicantService
             .getAddressSuggestionGroup(thisBlockUpdated)
             .thenApplyAsync(
                 addressSuggestionGroup -> {
                   ImmutableList<AddressSuggestion> suggestions =
                       addressSuggestionGroup.getAddressSuggestions();
-
                   if (suggestions.size() == 1
                       && suggestions.get(0).getAddress().equals(addressQuestion.getAddress())) {
+                    confirmAddressWithSuggestions(
+                        request, applicantId, programId, blockId, inReview, suggestions.get(0).getSingleLineAddress(), suggestions);
                     return renderNextBlock(
                         request,
                         applicantId,
