@@ -513,52 +513,82 @@ public final class ApplicantProgramBlocksController extends CiviFormController {
               .createAddressQuestion();
 
       if (addressQuestion.needsAddressCorrection()) {
+
+        // issue is that we need the data in here to determine where to redirect to...
+        // data is fetched async... i think?
+        // but then want to continue on with flow...
+        // what do i have before i enter this....
+        // i could get the address Suggestion group. i think i have that sync. and I have the
+        // original address i think...
+
         return applicantService
             .getAddressSuggestionGroup(thisBlockUpdated)
             .thenApplyAsync(
                 addressSuggestionGroup -> {
                   ImmutableList<AddressSuggestion> suggestions =
                       addressSuggestionGroup.getAddressSuggestions();
-                  String json = addressSuggestionJsonSerializer.serialize(suggestions);
 
-                  Boolean isEligibilityEnabledOnThisBlock =
-                      thisBlockUpdated.getLeafAddressNodeServiceAreaIds().isPresent();
+                  if (suggestions.size() == 1
+                      && suggestions.get(0).getAddress().equals(addressQuestion.getAddress())) {
+                    return renderNextBlock(
+                        request,
+                        applicantId,
+                        programId,
+                        blockId,
+                        inReview,
+                        roApplicantProgramService);
+                  } else {
+                    String json = addressSuggestionJsonSerializer.serialize(suggestions);
 
-                  return ok(addressCorrectionBlockView.render(
-                          buildApplicationBaseViewParams(
-                              request,
-                              applicantId,
-                              programId,
-                              blockId,
-                              inReview,
-                              roApplicantProgramService,
-                              thisBlockUpdated,
-                              applicantName,
-                              ApplicantQuestionRendererParams.ErrorDisplayMode.DISPLAY_ERRORS),
-                          messagesApi.preferred(request),
-                          addressSuggestionGroup,
-                          isEligibilityEnabledOnThisBlock))
-                      .addingToSession(request, ADDRESS_JSON_SESSION_KEY, json);
+                    Boolean isEligibilityEnabledOnThisBlock =
+                        thisBlockUpdated.getLeafAddressNodeServiceAreaIds().isPresent();
+
+                    return ok(addressCorrectionBlockView.render(
+                            buildApplicationBaseViewParams(
+                                request,
+                                applicantId,
+                                programId,
+                                blockId,
+                                inReview,
+                                roApplicantProgramService,
+                                thisBlockUpdated,
+                                applicantName,
+                                ApplicantQuestionRendererParams.ErrorDisplayMode.DISPLAY_ERRORS),
+                            messagesApi.preferred(request),
+                            addressSuggestionGroup,
+                            isEligibilityEnabledOnThisBlock))
+                        .addingToSession(request, ADDRESS_JSON_SESSION_KEY, json);
+                  }
                 });
       }
     }
+    return supplyAsync(
+        () ->
+            renderNextBlock(
+                request, applicantId, programId, blockId, inReview, roApplicantProgramService));
+  }
 
+  private Result renderNextBlock(
+      Request request,
+      long applicantId,
+      long programId,
+      String blockId,
+      boolean inReview,
+      ReadOnlyApplicantProgramService roApplicantProgramService) {
     CiviFormProfile submittingProfile = profileUtils.currentUserProfile(request).orElseThrow();
 
     try {
       ProgramDefinition programDefinition = programService.getProgramDefinition(programId);
       if (shouldRenderIneligibleBlockView(
           request, roApplicantProgramService, programDefinition, blockId)) {
-        return supplyAsync(
-            () ->
-                ok(
-                    ineligibleBlockView.render(
-                        request,
-                        submittingProfile,
-                        roApplicantProgramService,
-                        messagesApi.preferred(request),
-                        applicantId,
-                        programDefinition)));
+        return ok(
+            ineligibleBlockView.render(
+                request,
+                submittingProfile,
+                roApplicantProgramService,
+                messagesApi.preferred(request),
+                applicantId,
+                programDefinition));
       }
     } catch (ProgramNotFoundException e) {
       notFound(e.toString());
@@ -585,25 +615,20 @@ public final class ApplicantProgramBlocksController extends CiviFormController {
             : roApplicantProgramService.getInProgressBlockAfter(blockId).map(Block::getId);
     // No next block so go to the program review page.
     if (nextBlockIdMaybe.isEmpty()) {
-      return supplyAsync(
-          () -> redirect(routes.ApplicantProgramReviewController.review(applicantId, programId)));
+      return redirect(routes.ApplicantProgramReviewController.review(applicantId, programId));
     }
 
     if (inReview) {
-      return supplyAsync(
-          () ->
-              redirect(
-                      routes.ApplicantProgramBlocksController.review(
-                          applicantId, programId, nextBlockIdMaybe.get()))
-                  .flashing(flashingMap));
+      return redirect(
+              routes.ApplicantProgramBlocksController.review(
+                  applicantId, programId, nextBlockIdMaybe.get()))
+          .flashing(flashingMap);
     }
 
-    return supplyAsync(
-        () ->
-            redirect(
-                    routes.ApplicantProgramBlocksController.edit(
-                        applicantId, programId, nextBlockIdMaybe.get()))
-                .flashing(flashingMap));
+    return redirect(
+            routes.ApplicantProgramBlocksController.edit(
+                applicantId, programId, nextBlockIdMaybe.get()))
+        .flashing(flashingMap);
   }
 
   /** Returns true if eligibility is gating and the block is ineligible, false otherwise. */
