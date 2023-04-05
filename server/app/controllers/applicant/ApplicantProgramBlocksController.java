@@ -531,10 +531,11 @@ public final class ApplicantProgramBlocksController extends CiviFormController {
                   ImmutableList<AddressSuggestion> suggestions =
                       addressSuggestionGroup.getAddressSuggestions();
 
-                  /** 
-                   * Check for an address suggestion that exactly matches that address entered by the applicant.
-                   * If a match is found, save the matched suggestion to the db and skip the address validation screen.
-                   */ 
+                  /**
+                   * Check for an address suggestion that exactly matches that address entered by
+                   * the applicant. If a match is found, save the matched suggestion to the db and
+                   * skip the address validation screen.
+                   */
                   for (int i = 0; i < suggestions.size(); i++) {
                     AddressSuggestion suggestion = suggestions.get(i);
                     if (suggestion.getAddress().equals(addressQuestion.getAddress())) {
