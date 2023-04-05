@@ -530,39 +530,52 @@ public final class ApplicantProgramBlocksController extends CiviFormController {
                 addressSuggestionGroup -> {
                   ImmutableList<AddressSuggestion> suggestions =
                       addressSuggestionGroup.getAddressSuggestions();
-                  if (suggestions.size() == 1
-                      && suggestions.get(0).getAddress().equals(addressQuestion.getAddress())) {
-                    confirmAddressWithSuggestions(
-                        request, applicantId, programId, blockId, inReview, suggestions.get(0).getSingleLineAddress(), suggestions);
-                    return renderNextBlock(
-                        request,
-                        applicantId,
-                        programId,
-                        blockId,
-                        inReview,
-                        roApplicantProgramService);
-                  } else {
-                    String json = addressSuggestionJsonSerializer.serialize(suggestions);
 
-                    Boolean isEligibilityEnabledOnThisBlock =
-                        thisBlockUpdated.getLeafAddressNodeServiceAreaIds().isPresent();
-
-                    return ok(addressCorrectionBlockView.render(
-                            buildApplicationBaseViewParams(
-                                request,
-                                applicantId,
-                                programId,
-                                blockId,
-                                inReview,
-                                roApplicantProgramService,
-                                thisBlockUpdated,
-                                applicantName,
-                                ApplicantQuestionRendererParams.ErrorDisplayMode.DISPLAY_ERRORS),
-                            messagesApi.preferred(request),
-                            addressSuggestionGroup,
-                            isEligibilityEnabledOnThisBlock))
-                        .addingToSession(request, ADDRESS_JSON_SESSION_KEY, json);
+                  /** 
+                   * Check for an address suggestion that exactly matches that address entered by the applicant.
+                   * If a match is found, save the matched suggestion to the db and skip the address validation screen.
+                   */ 
+                  for (int i = 0; i < suggestions.size(); i++) {
+                    AddressSuggestion suggestion = suggestions.get(i);
+                    if (suggestion.getAddress().equals(addressQuestion.getAddress())) {
+                      confirmAddressWithSuggestions(
+                          request,
+                          applicantId,
+                          programId,
+                          blockId,
+                          inReview,
+                          suggestion.getSingleLineAddress(),
+                          suggestions);
+                      return renderNextBlock(
+                          request,
+                          applicantId,
+                          programId,
+                          blockId,
+                          inReview,
+                          roApplicantProgramService);
+                    }
                   }
+
+                  String json = addressSuggestionJsonSerializer.serialize(suggestions);
+
+                  Boolean isEligibilityEnabledOnThisBlock =
+                      thisBlockUpdated.getLeafAddressNodeServiceAreaIds().isPresent();
+
+                  return ok(addressCorrectionBlockView.render(
+                          buildApplicationBaseViewParams(
+                              request,
+                              applicantId,
+                              programId,
+                              blockId,
+                              inReview,
+                              roApplicantProgramService,
+                              thisBlockUpdated,
+                              applicantName,
+                              ApplicantQuestionRendererParams.ErrorDisplayMode.DISPLAY_ERRORS),
+                          messagesApi.preferred(request),
+                          addressSuggestionGroup,
+                          isEligibilityEnabledOnThisBlock))
+                      .addingToSession(request, ADDRESS_JSON_SESSION_KEY, json);
                 });
       }
     }
