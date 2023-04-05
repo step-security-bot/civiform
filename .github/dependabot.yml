@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /browser-test
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /formatter
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /server
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /test-support
+    schedule:
+      interval: daily

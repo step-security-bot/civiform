@@ -18,22 +18,30 @@ on:
       CIVIFORM_GITHUB_AUTOMATION_PERSONAL_ACCESS_TOKEN:
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   generate_markdown:
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@03bee3930647ebbf994244c21ddbc0d4933aab4f # v2.3.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout civiform/civiform@${{ inputs.release_number }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           ref: ${{ inputs.release_number }}
           path: civiform-release
 
       - name: Checkout civiform/civiform main
-        uses: actions/checkout@v3
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           path: civiform-main
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
         with:
           python-version: '3.10'
 
